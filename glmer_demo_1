@@ -1,0 +1,100 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r}
+ESS1.6e01_0_F1 <- read.csv("~/Downloads/ESS1-6e01_0_F1.csv")
+data <- ESS1.6e01_0_F1
+``` 
+
+```{r}
+library(vcd)
+```
+
+```{r}
+attach(data)
+t1 <- table(cntry, happy)
+mosaic(t1, shade=T, legend=T)
+assoc(t1, shade=T, legend=T)
+detach(data)
+```
+
+```{r}
+library(car)
+```
+
+```{r}
+data$fvote <- as.factor(data$vote)
+attach(data)
+data$v1 <- recode(data$fvote, "'1' = '1'; '2' = '0'; '3'=NA ; '7'=NA ; '8'=NA ; '9'=NA ")
+data$age <- recode(data$agea,"999 = NA")
+detach(data)
+```
+
+```{r}
+attach(data)
+table(cntry, v1)
+detach(data)
+```
+
+```{r}
+library(lme4)
+library(ggplot2)
+```
+
+```{r}
+m1 <-  glmer(v1 ~ age + ( age | cntry ), family=binomial, data)
+```
+
+```{r}
+plot(m1)
+```
+
+```{r}
+f1 <- m1@frame
+p1 <- fitted(m1)
+d1 <- cbind(f1, p1)
+```
+
+```{r}
+plot(d1)
+head(d1)
+```
+
+```{r}
+g1 <- ggplot(d1, aes(age, p1))
+g1 + geom_point(aes(colour=cntry))
+```
+
+```{r}
+m2 <-  glmer(v1 ~ age + ( age | essround ), family=binomial, data)
+```
+
+```{r}
+f2 <- m2@frame
+p2 <- fitted(m2)
+d2 <- cbind(f2, p2)
+```
+
+```{r}
+g2 <- ggplot(d2, aes(age, p2))
+g2 + geom_point(aes(colour=factor(essround)))
+```
+
+```{r}
+m3 <-  glmer(v1 ~ age + (age | cntry/essround ), family=binomial, data)
+```
+
+```{r}
+f3 <- m3@frame
+p3 <- fitted(m3)
+d3 <- cbind(f3, p3)
+```
+
+```{r}
+g3 <- ggplot(d3 , aes( age, p3))
+g3 + geom_point(aes(colour=factor(cntry)))
+g3 + geom_point(aes(colour=factor(essround)))
+g3 + geom_point(aes(shape=factor(essround))) + scale_shape(solid=FALSE)
+```
